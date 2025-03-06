@@ -1,60 +1,64 @@
 pipeline {
     agent any
-    
+   
     environment {
-        DOCKER_HUB_CREDS = credentials('docker-hub-credentials')
-        IMAGE_NAME = 'yourusername/mlops-model'  // Replace with your Docker Hub username
+        // Use an API token stored as a Jenkins credential
+        DOCKER_HUB_TOKEN = credentials('dckr_pat_93JkqvM9z_GclmS7hEM_Qz28eyM')
+        DOCKER_HUB_USERNAME = 'eishaa06'  // Replace with your actual username
+        IMAGE_NAME = "${DOCKER_HUB_USERNAME}/mlops-model"
         IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
-    
+   
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-        
+       
         stage('Install Dependencies') {
             steps {
                 sh 'pip install -r requirements.txt'
             }
         }
-        
+       
         stage('Train Model') {
             steps {
                 sh 'python model/train.py'
             }
         }
-        
+       
         stage('Run Tests') {
             steps {
                 sh 'pytest tests/'
             }
         }
-        
+       
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                 sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest"
             }
         }
-        
+       
         stage('Push to Docker Hub') {
             steps {
-                sh "echo $DOCKER_HUB_CREDS_PSW | docker login -u $DOCKER_HUB_CREDS_USR --password-stdin"
+                // Login using API token
+                sh "echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USERNAME} --password-stdin"
                 sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
                 sh "docker push ${IMAGE_NAME}:latest"
             }
         }
-        
+       
         stage('Clean Up') {
             steps {
                 sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
                 sh "docker rmi ${IMAGE_NAME}:latest"
+                sh "docker logout"  // Always logout after pushing
             }
         }
     }
-    
+   
     post {
         success {
             emailext (
@@ -65,11 +69,11 @@ pipeline {
                 <p><b>Docker Image:</b> ${IMAGE_NAME}:${IMAGE_TAG}</p>
                 <p>Check the <a href='${env.BUILD_URL}'>Jenkins build</a> for more details.</p>
                 """,
-                to: "admin@example.com", // Replace with admin email
+                to: "eishaharoon4@gmail.com", // Replace with your actual email
                 mimeType: 'text/html'
             )
         }
-        
+       
         failure {
             emailext (
                 subject: "Failed: ML Model Deployment - Build #${env.BUILD_NUMBER}",
@@ -78,7 +82,7 @@ pipeline {
                 <p><b>Build:</b> ${env.BUILD_NUMBER}</p>
                 <p>Check the <a href='${env.BUILD_URL}'>Jenkins build</a> for more details.</p>
                 """,
-                to: "admin@example.com", // Replace with admin email
+                to: "eishaharoon4@gmail.com", // Replace with your actual email
                 mimeType: 'text/html'
             )
         }
