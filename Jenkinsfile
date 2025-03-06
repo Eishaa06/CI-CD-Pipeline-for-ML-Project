@@ -3,7 +3,7 @@ pipeline {
    
     environment {
         // Use an API token stored as a Jenkins credential
-        DOCKER_HUB_TOKEN = ${{ secrets.DOCKER_HUB_TOKEN }}
+        DOCKER_HUB_TOKEN = "${{ secrets.DOCKER_HUB_TOKEN }}"
         
         DOCKER_HUB_USERNAME = 'eishaa06'  // Replace with your actual username
         IMAGE_NAME = "${DOCKER_HUB_USERNAME}/mlops-model"
