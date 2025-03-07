@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.9-slim'
-            args '-u root'
-        }
-    }
+    agent any
     environment {
         // Use an API token stored as a Jenkins credential
         DOCKER_HUB_TOKEN = "${params.DOCKER_HUB_TOKEN}"
@@ -21,19 +16,31 @@ pipeline {
        
         stage('Install Dependencies') {
             steps {
-                sh 'python -m pip install --upgrade pip && python -m pip install -r requirements.txt'
+                script {
+                    docker.image("python:3.9-slim").inside("-u root") {
+                        sh 'python -m pip install --upgrade pip && python -m pip install -r requirements.txt'
+                    }
+                }
             }
         }
        
         stage('Train Model') {
             steps {
-                sh 'python model/train.py'
+                script {
+                    docker.image("python:3.9-slim").inside("-u root") {
+                        sh 'python model/train.py'
+                    }
+                }
             }
         }
        
         stage('Run Tests') {
             steps {
-                sh 'pytest tests/'
+                script {
+                    docker.image("python:3.9-slim").inside("-u root") {
+                        sh 'pytest tests/'
+                    }
+                }
             }
         }
        
