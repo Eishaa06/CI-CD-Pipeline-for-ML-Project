@@ -36,7 +36,7 @@ pipeline {
                 - **Job Name:** ${JOB_NAME}
                 - **Build Number:** ${BUILD_NUMBER}
                 - **View Logs:** ${BUILD_URL}
-                - **Docker Image:** \`eishaa06/mymlapp:latest\`
+                - **Docker Image:** eishaa06/mymlapp:latest
                 🎉 Check your email for details.
                 """
             )
