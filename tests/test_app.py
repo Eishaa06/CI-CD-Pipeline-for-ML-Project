@@ -27,7 +27,7 @@ class TestApp(unittest.TestCase):
             print("Model not found. Training new model...")
             train_model()
             if not os.path.exists(model_path):
-                print(f"Warning: Model still not found at {model_path} after training")
+                print(f"Warning: Model still at {model_path} after training")
     
     def setUp(self):
         self.app = app.test_client()
