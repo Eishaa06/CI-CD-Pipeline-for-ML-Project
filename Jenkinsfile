@@ -1,9 +1,7 @@
 pipeline {
     agent any
     environment {
-        // Use an API token stored as a Jenkins credential
-        //DOCKER_HUB_TOKEN = "${params.DOCKER_HUB_TOKEN}"
-        DOCKER_HUB_TOKEN = credentials('dckr_pat_93JkqvM9z_GclmS7hEM_Qz28eyM')
+        // Remove DOCKER_HUB_TOKEN from here.
         DOCKER_HUB_USERNAME = 'eishaa06'  // Replace with your actual username
         IMAGE_NAME = "${DOCKER_HUB_USERNAME}/mlops-model"
         IMAGE_TAG = "${env.BUILD_NUMBER}"
@@ -54,10 +52,12 @@ pipeline {
        
         stage('Push to Docker Hub') {
             steps {
-                // Login using API token
-                sh "echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USERNAME} --password-stdin"
-                sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
-                sh "docker push ${IMAGE_NAME}:latest"
+                withCredentials([string(credentialsId: 'dckr_pat_93JkqvM9z_GclmS7hEM_Qz28eyM', variable: 'DOCKER_HUB_TOKEN')]) {
+                    // Login using the API token from credentials
+                    sh "echo ${DOCKER_HUB_TOKEN} | docker login -u ${DOCKER_HUB_USERNAME} --password-stdin"
+                    sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker push ${IMAGE_NAME}:latest"
+                }
             }
         }
        
