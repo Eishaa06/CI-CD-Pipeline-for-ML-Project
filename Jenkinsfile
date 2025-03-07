@@ -2,7 +2,7 @@ pipeline {
     agent any
    
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('DOCKER_HUB_TOKEN') // Create this in Jenkins credentials
+        DOCKERHUB_CREDENTIALS = credentials('docker-hub-credentials') // Create this in Jenkins credentials
         JENKINS_CONTAINER_NAME = "jenkins-container" // Adjust this to your actual container name
         IMAGE_NAME = "eishaa06/mlops-model"
         IMAGE_TAG = "${env.BUILD_NUMBER}"
