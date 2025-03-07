@@ -2,7 +2,7 @@ pipeline {
     agent any
    
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('docker-hub-credentials') // Create this in Jenkins credentials
+        DOCKERHUB_CREDENTIALS = credentials('docker-hub-api-token') // Create this in Jenkins credentials
         JENKINS_CONTAINER_NAME = "jenkins-container" // Adjust this to your actual container name
         IMAGE_NAME = "eishaa06/mlops-model"
         IMAGE_TAG = "${env.BUILD_NUMBER}"
@@ -73,7 +73,7 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-api-token',
                                                   usernameVariable: 'DOCKER_USER',
                                                   passwordVariable: 'DOCKER_PASS')]) {
                         sh """
@@ -106,6 +106,7 @@ pipeline {
                 """,
                 to: "eishaharoon4@gmail.com",
                 mimeType: 'text/html'
+                auth: 'email-server-credentials'
             )
         }
        
@@ -119,6 +120,7 @@ pipeline {
                 """,
                 to: "eishaharoon4@gmail.com",
                 mimeType: 'text/html'
+                auth: 'email-server-credentials'
             )
         }
     }
