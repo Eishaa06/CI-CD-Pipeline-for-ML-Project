@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // Define environment variables
         DOCKERHUB_CREDENTIALS = 'docker-hub-api-token'
         IMAGE_NAME = 'eishaa06/mlops-model'
     }
@@ -16,6 +15,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
+                script {
+                    echo "Checking Docker installation..."
+                    sh "docker --version" // Debugging Docker installation
+                }
                 sh "docker build -t ${IMAGE_NAME} ."
             }
         }
@@ -38,7 +41,7 @@ pipeline {
             emailext(
                 to: "eishaharoon4@gmail.com",
                 subject: "✅ Jenkins Build: ${JOB_NAME} #${BUILD_NUMBER}",
-                body: """🚀 Jenkins has completed the build!
+                body: """<p>🚀 Jenkins has completed the build!</p>
                 <ul>
                   <li><b>Job Name:</b> ${JOB_NAME}</li>
                   <li><b>Build Number:</b> ${BUILD_NUMBER}</li>
