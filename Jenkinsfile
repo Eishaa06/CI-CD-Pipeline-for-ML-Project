@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = 'docker-hub-api-token'  // Your existing credential ID
+        DOCKERHUB_CREDENTIALS = 'docker-hub-api-token'  // Your credential ID
         IMAGE_NAME = "eishaa06/mlops-model"
         JENKINS_CONTAINER_NAME = "jenkins"    // Your container name
     }
@@ -16,12 +16,16 @@ pipeline {
 
         stage('Install Dependencies & Train Model') {
             steps {
-                sh '''
-                    apt-get update -y || true
-                    apt-get install -y python3 python3-pip || true
-                    python3 -m pip install -r requirements.txt || true
-                    python3 model/train.py || true
-                    python3 -m pytest tests/ || true
+                bat '''
+                    REM Update/install Python if needed
+                    python -m pip install --upgrade pip || echo "Pip upgrade failed but continuing..."
+                    python -m pip install -r requirements.txt || echo "Requirements installation failed but continuing..."
+                   
+                    REM Run the model training
+                    python model/train.py || echo "Model training failed but continuing..."
+                   
+                    REM Run tests
+                    python -m pytest tests/ || echo "Tests failed but continuing..."
                 '''
             }
         }
@@ -29,9 +33,9 @@ pipeline {
         stage('Commit Running Jenkins Container as Image') {
             steps {
                 script {
-                    sh '''
-                        CONTAINER_ID=$(hostname)
-                        docker commit $CONTAINER_ID ${IMAGE_NAME}:latest
+                    bat '''
+                        FOR /F "tokens=*" %%i IN ('hostname') DO SET CONTAINER_ID=%%i
+                        docker commit %CONTAINER_ID% %IMAGE_NAME%:latest
                     '''
                 }
             }
@@ -41,8 +45,8 @@ pipeline {
             steps {
                 script {
                     withCredentials([string(credentialsId: DOCKERHUB_CREDENTIALS, variable: 'DOCKERHUB_PAT')]) {
-                        sh "echo ${DOCKERHUB_PAT} | docker login -u eishaa06 --password-stdin"
-                        sh "docker push ${IMAGE_NAME}:latest"
+                        bat "echo %DOCKERHUB_PAT% | docker login -u eishaa06 --password-stdin"
+                        bat "docker push ${IMAGE_NAME}:latest"
                     }
                 }
             }
@@ -52,10 +56,10 @@ pipeline {
     post {
         always {
             cleanWs()  
-            sh 'docker rmi ${IMAGE_NAME}:latest || true'
-            sh 'docker logout || true'
+            bat "docker rmi ${IMAGE_NAME}:latest || echo Container removal failed but continuing..."
+            bat "docker logout || echo Logout failed but continuing..."
         }
-        
+       
         success {
             emailext (
                 subject: "Success: ML Model Deployment",
