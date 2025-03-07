@@ -1,6 +1,10 @@
 pipeline {
-    agent any
-   
+    agent {
+        docker {
+            image 'python:3.9-slim'
+            args '-u root'
+        }
+    }
     environment {
         // Use an API token stored as a Jenkins credential
         DOCKER_HUB_TOKEN = "${params.DOCKER_HUB_TOKEN}"
@@ -8,7 +12,6 @@ pipeline {
         IMAGE_NAME = "${DOCKER_HUB_USERNAME}/mlops-model"
         IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
-   
     stages {
         stage('Checkout') {
             steps {
@@ -18,7 +21,7 @@ pipeline {
        
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh 'python -m pip install --upgrade pip && python -m pip install -r requirements.txt'
             }
         }
        
@@ -54,7 +57,7 @@ pipeline {
             steps {
                 sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
                 sh "docker rmi ${IMAGE_NAME}:latest"
-                sh "docker logout"  // Always logout after pushing
+                sh "docker logout"
             }
         }
     }
@@ -69,7 +72,7 @@ pipeline {
                 <p><b>Docker Image:</b> ${IMAGE_NAME}:${IMAGE_TAG}</p>
                 <p>Check the <a href='${env.BUILD_URL}'>Jenkins build</a> for more details.</p>
                 """,
-                to: "eishaharoon4@gmail.com", // Replace with your actual email
+                to: "eishaharoon4@gmail.com",
                 mimeType: 'text/html'
             )
         }
@@ -82,7 +85,7 @@ pipeline {
                 <p><b>Build:</b> ${env.BUILD_NUMBER}</p>
                 <p>Check the <a href='${env.BUILD_URL}'>Jenkins build</a> for more details.</p>
                 """,
-                to: "eishaharoon4@gmail.com", // Replace with your actual email
+                to: "eishaharoon4@gmail.com",
                 mimeType: 'text/html'
             )
         }
