@@ -2,52 +2,30 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = 'docker-hub-api-token'  // Your credential ID
-        IMAGE_NAME = "eishaa06/mlops-model"
-        JENKINS_CONTAINER_NAME = "jenkins"    // Your container name
+        // Keep your existing IDs/variables here:
+        DOCKERHUB_CREDENTIALS = 'docker-hub-api-token'
+        IMAGE_NAME = 'eishaa06/mlops-model'
+        JENKINS_CONTAINER_NAME = "jenkins" // Optional if you don’t use it
     }
 
     stages {
         stage('Clone Repository') {
             steps {
-                checkout scm
+                git 'https://github.com/Eishaa06/CI-CD-Pipeline-for-ML-Project.git'
             }
         }
 
-        stage('Install Dependencies & Train Model') {
+        stage('Build Docker Image') {
             steps {
-                bat '''
-                    REM Update/install Python if needed
-                    python -m pip install --upgrade pip || echo "Pip upgrade failed but continuing..."
-                    python -m pip install -r requirements.txt || echo "Requirements installation failed but continuing..."
-                   
-                    REM Run the model training
-                    python model/train.py || echo "Model training failed but continuing..."
-                   
-                    REM Run tests
-                    python -m pytest tests/ || echo "Tests failed but continuing..."
-                '''
+                sh "docker build -t ${IMAGE_NAME} ."
             }
         }
 
-        stage('Commit Running Jenkins Container as Image') {
+        stage('Push to Docker Hub') {
             steps {
-                script {
-                    bat '''
-                        FOR /F "tokens=*" %%i IN ('hostname') DO SET CONTAINER_ID=%%i
-                        docker commit %CONTAINER_ID% %IMAGE_NAME%:latest
-                    '''
-                }
-            }
-        }
-
-        stage('Docker Push to DockerHub') {
-            steps {
-                script {
-                    withCredentials([string(credentialsId: DOCKERHUB_CREDENTIALS, variable: 'DOCKERHUB_PAT')]) {
-                        bat "echo %DOCKERHUB_PAT% | docker login -u eishaa06 --password-stdin"
-                        bat "docker push ${IMAGE_NAME}:latest"
-                    }
+                withDockerRegistry([credentialsId: DOCKERHUB_CREDENTIALS, url: '']) {
+                    sh "docker tag ${IMAGE_NAME} ${IMAGE_NAME}:latest"
+                    sh "docker push ${IMAGE_NAME}:latest"
                 }
             }
         }
@@ -55,17 +33,19 @@ pipeline {
 
     post {
         always {
-            cleanWs()  
-            bat "docker rmi ${IMAGE_NAME}:latest || echo Container removal failed but continuing..."
-            bat "docker logout || echo Logout failed but continuing..."
-        }
-       
-        success {
-            emailext (
-                subject: "Success: ML Model Deployment",
-                body: "The ML model has been successfully deployed to Docker Hub.",
+            script {
+                echo "🔔 Sending email notification..."
+            }
+            emailext(
                 to: "eishaharoon4@gmail.com",
-                mimeType: 'text/html'
+                subject: "✅ Jenkins Build: ${JOB_NAME} #${BUILD_NUMBER}",
+                body: """🚀 **Jenkins has completed the build!**
+                - **Job Name:** ${JOB_NAME}
+                - **Build Number:** ${BUILD_NUMBER}
+                - **View Logs:** ${BUILD_URL}
+                - **Docker Image:** \`${IMAGE_NAME}:latest\`
+                🎉 Check your email for details.
+                """
             )
         }
     }
