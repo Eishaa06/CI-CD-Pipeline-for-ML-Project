@@ -106,7 +106,6 @@ pipeline {
                 """,
                 to: "eishaharoon4@gmail.com",
                 mimeType: 'text/html'
-                auth: 'email-server-credentials'
             )
         }
        
@@ -120,7 +119,6 @@ pipeline {
                 """,
                 to: "eishaharoon4@gmail.com",
                 mimeType: 'text/html'
-                auth: 'email-server-credentials'
             )
         }
     }
