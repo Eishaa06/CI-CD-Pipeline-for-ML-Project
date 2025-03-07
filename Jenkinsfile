@@ -27,17 +27,16 @@ pipeline {
     post {
         always {
             script {
-                echo "🔔 Sending email notification..."
+                echo "sending email notification..."
             }
             emailext(
                 to: 'eishaharoon4@gmail.com',
-                subject: "✅ Jenkins Build: ${JOB_NAME} #${BUILD_NUMBER}",
-                body: """🚀 **Jenkins has completed the build!**
+                subject: " Jenkins Build: ${JOB_NAME} #${BUILD_NUMBER}",
+                body: """ **Jenkins has completed the build!**
                 - **Job Name:** ${JOB_NAME}
                 - **Build Number:** ${BUILD_NUMBER}
                 - **View Logs:** ${BUILD_URL}
-                - **Docker Image:** \`eishaa06/mymlapp:latest\`
-                🎉 Check your email for details.
+                - **Docker Image:** \`eishaa06/mymlapp:latest\`Check your email for details.
                 """
             )
         }

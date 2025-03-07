@@ -3,7 +3,7 @@ import os
 import sys
 import numpy as np
 
-# Add parent directory to path
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model.train import train_model
 from model.predict import predict, load_model
@@ -12,7 +12,6 @@ class TestModel(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        # Train model if it doesn't exist
         model_path = os.path.join('model', 'model.pkl')
         if not os.path.exists(model_path):
             train_model()

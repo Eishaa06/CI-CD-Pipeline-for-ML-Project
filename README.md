@@ -1,1 +1,1 @@
-# meany
+# mean
